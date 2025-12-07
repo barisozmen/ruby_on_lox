@@ -1,0 +1,32 @@
+// Test if statements and logical operators
+var x = 5;
+
+if (x > 3) print "x is greater than 3";
+
+if (x < 3) {
+  print "shouldn't print";
+} else {
+  print "x is not less than 3";
+}
+
+// Test logical operators with short-circuit
+var a = true;
+var b = false;
+
+if (a or b) print "or works";
+if (a and b) print "shouldn't print";
+if (a and true) print "and works";
+
+// Test nested if
+if (x > 0) {
+  if (x == 5) {
+    print "x is exactly 5";
+  }
+}
+
+// Test dangling else
+if (true)
+  if (false)
+    print "inner then";
+  else
+    print "else binds to inner if";
