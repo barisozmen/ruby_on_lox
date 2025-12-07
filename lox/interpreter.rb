@@ -1,10 +1,14 @@
 require_relative 'runtime_error'
 require_relative 'token_type'
+require_relative 'environment'
 
 class Interpreter
-  def interpret(expression)
-    value = evaluate(expression)
-    puts stringify(value)
+  def initialize
+    @environment = Environment.new
+  end
+
+  def interpret(statements)
+    statements.each { |statement| execute(statement) }
   rescue RuntimeError => e
     Lox.runtime_error(e)
   end
@@ -73,7 +77,53 @@ class Interpreter
     end
   end
 
+  def visit_variable(expr)
+    @environment.get(expr.name)
+  end
+
+  def visit_assign(expr)
+    value = evaluate(expr.value)
+    @environment.assign(expr.name, value)
+    value
+  end
+
+  def visit_expression_stmt(stmt)
+    evaluate(stmt.expression)
+    nil
+  end
+
+  def visit_print_stmt(stmt)
+    value = evaluate(stmt.expression)
+    puts stringify(value)
+    nil
+  end
+
+  def visit_var_stmt(stmt)
+    value = stmt.initializer ? evaluate(stmt.initializer) : nil
+    @environment.define(stmt.name.lexeme, value)
+    nil
+  end
+
+  def visit_block_stmt(stmt)
+    execute_block(stmt.statements, Environment.new(@environment))
+    nil
+  end
+
   private
+
+  def execute(stmt)
+    stmt.accept(self)
+  end
+
+  def execute_block(statements, environment)
+    previous = @environment
+    begin
+      @environment = environment
+      statements.each { |statement| execute(statement) }
+    ensure
+      @environment = previous
+    end
+  end
 
   def evaluate(expr)
     expr.accept(self)

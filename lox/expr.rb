@@ -22,4 +22,16 @@ module Expr
       visitor.visit_unary(self)
     end
   end
+
+  Variable = Struct.new(:name) do
+    def accept(visitor)
+      visitor.visit_variable(self)
+    end
+  end
+
+  Assign = Struct.new(:name, :value) do
+    def accept(visitor)
+      visitor.visit_assign(self)
+    end
+  end
 end

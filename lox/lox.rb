@@ -39,11 +39,11 @@ class Lox
     scanner = Scanner.new(source)
     tokens = scanner.scan_tokens
     parser = Parser.new(tokens)
-    expression = parser.parse
+    statements = parser.parse
 
-    return if @had_error
+    return if @had_error || statements.nil?
 
-    @interpreter.interpret(expression)
+    @interpreter.interpret(statements)
   end
 
   def self.error(token_or_line, message)
