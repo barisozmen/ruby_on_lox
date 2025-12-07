@@ -39,6 +39,9 @@ class Interpreter
       left - right
     when TokenType::SLASH
       check_number_operands(expr.operator, left, right)
+      if right.zero?
+        raise RuntimeError.new(expr.operator, "Cannot divide by zero. Attempted to divide #{left} by #{right}")
+      end
       left / right
     when TokenType::STAR
       check_number_operands(expr.operator, left, right)
