@@ -34,4 +34,10 @@ module Expr
       visitor.visit_assign(self)
     end
   end
+
+  Logical = Struct.new(:left, :operator, :right) do
+    def accept(visitor)
+      visitor.visit_logical(self)
+    end
+  end
 end

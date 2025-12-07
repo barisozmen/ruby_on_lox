@@ -38,6 +38,9 @@ class Parser
   end
 
   def statement
+    return if_statement if match(IF)
+    return while_statement if match(WHILE)
+    return for_statement if match(FOR)
     return print_statement if match(PRINT)
     return block if match(LEFT_BRACE)
     expression_statement
@@ -62,12 +65,59 @@ class Parser
     Stmt::Block.new(statements)
   end
 
+  def if_statement
+    consume(LEFT_PAREN, "Expect '(' after 'if'.")
+    condition = expression
+    consume(RIGHT_PAREN, "Expect ')' after if condition.")
+
+    then_branch = statement
+    else_branch = match(ELSE) ? statement : nil
+
+    Stmt::If.new(condition, then_branch, else_branch)
+  end
+
+  def while_statement
+    consume(LEFT_PAREN, "Expect '(' after 'while'.")
+    condition = expression
+    consume(RIGHT_PAREN, "Expect ')' after condition.")
+    body = statement
+
+    Stmt::While.new(condition, body)
+  end
+
+  def for_statement
+    consume(LEFT_PAREN, "Expect '(' after 'for'.")
+
+    initializer = if match(SEMICOLON)
+                    nil
+                  elsif match(VAR)
+                    var_declaration
+                  else
+                    expression_statement
+                  end
+
+    condition = check(SEMICOLON) ? nil : expression
+    consume(SEMICOLON, "Expect ';' after loop condition.")
+
+    increment = check(RIGHT_PAREN) ? nil : expression
+    consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+
+    body = statement
+
+    # Desugar to while loop
+    body = Stmt::Block.new([body, Stmt::Expression.new(increment)]) if increment
+    body = Stmt::While.new(condition || Expr::Literal.new(true), body)
+    body = Stmt::Block.new([initializer, body]) if initializer
+
+    body
+  end
+
   def expression
     assignment
   end
 
   def assignment
-    expr = equality
+    expr = or_expr
 
     if match(EQUAL)
       equals = previous
@@ -78,6 +128,30 @@ class Parser
       end
 
       error(equals, "Invalid assignment target.")
+    end
+
+    expr
+  end
+
+  def or_expr
+    expr = and_expr
+
+    while match(OR)
+      operator = previous
+      right = and_expr
+      expr = Expr::Logical.new(expr, operator, right)
+    end
+
+    expr
+  end
+
+  def and_expr
+    expr = equality
+
+    while match(AND)
+      operator = previous
+      right = equality
+      expr = Expr::Logical.new(expr, operator, right)
     end
 
     expr

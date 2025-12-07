@@ -22,4 +22,16 @@ module Stmt
       visitor.visit_block_stmt(self)
     end
   end
+
+  If = Struct.new(:condition, :then_branch, :else_branch) do
+    def accept(visitor)
+      visitor.visit_if_stmt(self)
+    end
+  end
+
+  While = Struct.new(:condition, :body) do
+    def accept(visitor)
+      visitor.visit_while_stmt(self)
+    end
+  end
 end

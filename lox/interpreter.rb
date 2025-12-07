@@ -87,6 +87,18 @@ class Interpreter
     value
   end
 
+  def visit_logical(expr)
+    left = evaluate(expr.left)
+
+    if expr.operator.type == TokenType::OR
+      return left if truthy?(left)
+    else
+      return left unless truthy?(left)
+    end
+
+    evaluate(expr.right)
+  end
+
   def visit_expression_stmt(stmt)
     evaluate(stmt.expression)
     nil
@@ -106,6 +118,20 @@ class Interpreter
 
   def visit_block_stmt(stmt)
     execute_block(stmt.statements, Environment.new(@environment))
+    nil
+  end
+
+  def visit_if_stmt(stmt)
+    if truthy?(evaluate(stmt.condition))
+      execute(stmt.then_branch)
+    elsif stmt.else_branch
+      execute(stmt.else_branch)
+    end
+    nil
+  end
+
+  def visit_while_stmt(stmt)
+    execute(stmt.body) while truthy?(evaluate(stmt.condition))
     nil
   end
 
