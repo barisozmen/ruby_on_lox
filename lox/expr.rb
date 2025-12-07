@@ -46,4 +46,22 @@ module Expr
       visitor.visit_call(self)
     end
   end
+
+  Get = Struct.new(:object, :name) do
+    def accept(visitor)
+      visitor.visit_get(self)
+    end
+  end
+
+  Set = Struct.new(:object, :name, :value) do
+    def accept(visitor)
+      visitor.visit_set(self)
+    end
+  end
+
+  This = Struct.new(:keyword) do
+    def accept(visitor)
+      visitor.visit_this(self)
+    end
+  end
 end

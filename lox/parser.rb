@@ -23,6 +23,7 @@ class Parser
   private
 
   def declaration
+    return class_declaration if match(CLASS)
     return function_declaration("function") if match(FUN)
     return var_declaration if match(VAR)
     statement
@@ -36,6 +37,17 @@ class Parser
     initializer = match(EQUAL) ? expression : nil
     consume(SEMICOLON, "Expect ';' after variable declaration.")
     Stmt::Var.new(name, initializer)
+  end
+
+  def class_declaration
+    name = consume(IDENTIFIER, "Expect class name.")
+    consume(LEFT_BRACE, "Expect '{' before class body.")
+
+    methods = []
+    methods << function_declaration("method") until check(RIGHT_BRACE) || at_end?
+
+    consume(RIGHT_BRACE, "Expect '}' after class body.")
+    Stmt::Class.new(name, methods)
   end
 
   def function_declaration(kind)
@@ -155,6 +167,8 @@ class Parser
 
       if expr.is_a?(Expr::Variable)
         return Expr::Assign.new(expr.name, value)
+      elsif expr.is_a?(Expr::Get)
+        return Expr::Set.new(expr.object, expr.name, value)
       end
 
       error(equals, "Invalid assignment target.")
@@ -251,6 +265,9 @@ class Parser
     loop do
       if match(LEFT_PAREN)
         expr = finish_call(expr)
+      elsif match(DOT)
+        name = consume(IDENTIFIER, "Expect property name after '.'.")
+        expr = Expr::Get.new(expr, name)
       else
         break
       end
@@ -280,6 +297,7 @@ class Parser
     return Expr::Literal.new(true) if match(TRUE)
     return Expr::Literal.new(nil) if match(NIL)
     return Expr::Literal.new(previous.literal) if match(NUMBER, STRING)
+    return Expr::This.new(previous) if match(THIS)
     return Expr::Variable.new(previous) if match(IDENTIFIER)
 
     if match(LEFT_PAREN)

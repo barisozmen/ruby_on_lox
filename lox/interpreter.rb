@@ -2,6 +2,7 @@ require_relative 'runtime_error'
 require_relative 'token_type'
 require_relative 'environment'
 require_relative 'lox_function'
+require_relative 'lox_class'
 require_relative 'return_exception'
 
 class Interpreter
@@ -142,6 +143,29 @@ class Interpreter
     callee.call(self, arguments)
   end
 
+  def visit_get(expr)
+    object = evaluate(expr.object)
+    return object.get(expr.name) if object.is_a?(LoxInstance)
+
+    raise RuntimeError.new(expr.name, "Only instances have properties.")
+  end
+
+  def visit_set(expr)
+    object = evaluate(expr.object)
+
+    unless object.is_a?(LoxInstance)
+      raise RuntimeError.new(expr.name, "Only instances have fields.")
+    end
+
+    value = evaluate(expr.value)
+    object.set(expr.name, value)
+    value
+  end
+
+  def visit_this(expr)
+    look_up_variable(expr.keyword, expr)
+  end
+
   def visit_expression_stmt(stmt)
     evaluate(stmt.expression)
     nil
@@ -181,6 +205,20 @@ class Interpreter
   def visit_function_stmt(stmt)
     function = LoxFunction.new(stmt, @environment)
     @environment.define(stmt.name.lexeme, function)
+    nil
+  end
+
+  def visit_class_stmt(stmt)
+    @environment.define(stmt.name.lexeme, nil)
+
+    methods = {}
+    stmt.methods.each do |method|
+      function = LoxFunction.new(method, @environment, method.name.lexeme == "init")
+      methods[method.name.lexeme] = function
+    end
+
+    klass = LoxClass.new(stmt.name.lexeme, methods)
+    @environment.assign(stmt.name, klass)
     nil
   end
 

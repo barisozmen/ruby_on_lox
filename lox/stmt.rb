@@ -46,4 +46,10 @@ module Stmt
       visitor.visit_return_stmt(self)
     end
   end
+
+  Class = Struct.new(:name, :methods) do
+    def accept(visitor)
+      visitor.visit_class_stmt(self)
+    end
+  end
 end

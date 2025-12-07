@@ -3,6 +3,7 @@ class Resolver
     @interpreter = interpreter
     @scopes = []
     @current_function = :none
+    @current_class = :none
   end
 
   # Statements
@@ -27,6 +28,26 @@ class Resolver
     nil
   end
 
+  def visit_class_stmt(stmt)
+    enclosing_class = @current_class
+    @current_class = :class
+
+    declare(stmt.name)
+    define(stmt.name)
+
+    begin_scope
+    @scopes.last["this"] = true
+
+    stmt.methods.each do |method|
+      declaration = method.name.lexeme == "init" ? :initializer : :method
+      resolve_function(method, declaration)
+    end
+
+    end_scope
+    @current_class = enclosing_class
+    nil
+  end
+
   def visit_expression_stmt(stmt)
     resolve(stmt.expression)
     nil
@@ -47,6 +68,9 @@ class Resolver
   def visit_return_stmt(stmt)
     if @current_function == :none
       Lox.error(stmt.keyword, "Can't return from top-level code.")
+    end
+    if stmt.value && @current_function == :initializer
+      Lox.error(stmt.keyword, "Can't return a value from an initializer.")
     end
     resolve(stmt.value) if stmt.value
     nil
@@ -102,6 +126,26 @@ class Resolver
 
   def visit_unary(expr)
     resolve(expr.right)
+    nil
+  end
+
+  def visit_get(expr)
+    resolve(expr.object)
+    nil
+  end
+
+  def visit_set(expr)
+    resolve(expr.value)
+    resolve(expr.object)
+    nil
+  end
+
+  def visit_this(expr)
+    if @current_class == :none
+      Lox.error(expr.keyword, "Can't use 'this' outside of a class.")
+      return nil
+    end
+    resolve_local(expr, expr.keyword)
     nil
   end
 
