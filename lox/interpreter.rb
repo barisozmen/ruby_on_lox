@@ -8,6 +8,7 @@ class Interpreter
   def initialize
     @globals = Environment.new
     @environment = @globals
+    @locals = {}.compare_by_identity
 
     # Native function: clock
     @globals.define("clock", Class.new do
@@ -98,12 +99,19 @@ class Interpreter
   end
 
   def visit_variable(expr)
-    @environment.get(expr.name)
+    look_up_variable(expr.name, expr)
   end
 
   def visit_assign(expr)
     value = evaluate(expr.value)
-    @environment.assign(expr.name, value)
+
+    distance = @locals[expr]
+    if distance
+      @environment.assign_at(distance, expr.name.lexeme, value)
+    else
+      @globals.assign(expr.name, value)
+    end
+
     value
   end
 
@@ -191,7 +199,20 @@ class Interpreter
     end
   end
 
+  def resolve(expr, depth)
+    @locals[expr] = depth
+  end
+
   private
+
+  def look_up_variable(name, expr)
+    distance = @locals[expr]
+    if distance
+      @environment.get_at(distance, name.lexeme)
+    else
+      @globals.get(name)
+    end
+  end
 
   def execute(stmt)
     stmt.accept(self)

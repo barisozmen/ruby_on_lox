@@ -1,6 +1,8 @@
 require_relative 'runtime_error'
 
 class Environment
+  attr_reader :values, :enclosing
+
   def initialize(enclosing = nil)
     @values = {}
     @enclosing = enclosing
@@ -29,5 +31,19 @@ class Environment
     end
 
     raise RuntimeError.new(name, "Undefined variable '#{name.lexeme}'.")
+  end
+
+  def get_at(distance, name)
+    ancestor(distance).values[name]
+  end
+
+  def assign_at(distance, name, value)
+    ancestor(distance).values[name] = value
+  end
+
+  def ancestor(distance)
+    environment = self
+    distance.times { environment = environment.enclosing }
+    environment
   end
 end

@@ -1,0 +1,58 @@
+// Test lexical scoping with closures
+var a = "global";
+{
+  fun showA() {
+    print a;
+  }
+  showA();
+  var a = "block";
+  showA();  // Should still print "global"
+}
+
+// Test nested closures with multiple scope levels
+var x = "global x";
+{
+  var x = "outer x";
+  {
+    var x = "inner x";
+    fun show() {
+      print x;  // Should capture "inner x"
+    }
+    show();
+  }
+  fun show() {
+    print x;  // Should capture "outer x"
+  }
+  show();
+}
+
+// Test closure capturing in loops
+var list = nil;
+for (var i = 0; i < 3; i = i + 1) {
+  fun capture() {
+    print i;
+  }
+  if (i == 2) {
+    list = capture;
+  }
+}
+list();  // Should print 2
+
+// Test variable shadowing across scopes
+var shadowed = "global";
+{
+  var shadowed = "outer";
+  print shadowed;
+  {
+    var shadowed = "inner";
+    print shadowed;
+  }
+  print shadowed;
+}
+print shadowed;
+
+// Test function parameters are accessible
+fun testParams(param) {
+  print param;
+}
+testParams("original");

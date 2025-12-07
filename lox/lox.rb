@@ -1,6 +1,7 @@
 require_relative 'scanner'
 require_relative 'parser'
 require_relative 'interpreter'
+require_relative 'resolver'
 
 class Lox
   @had_error = false
@@ -42,6 +43,11 @@ class Lox
     statements = parser.parse
 
     return if @had_error || statements.nil?
+
+    resolver = Resolver.new(@interpreter)
+    resolver.resolve(statements)
+
+    return if @had_error
 
     @interpreter.interpret(statements)
   end

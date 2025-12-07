@@ -1,0 +1,77 @@
+// Test distance calculation with deep nesting
+{
+  var a = 1;
+  {
+    {
+      {
+        print a;  // Distance 3
+      }
+    }
+  }
+}
+
+// Test same variable name at different scope levels
+{
+  var x = "first";
+  print x;
+  {
+    var x = "second";
+    print x;
+    {
+      var x = "third";
+      print x;
+    }
+    print x;
+  }
+  print x;
+}
+
+// Test for loop variable scoping
+for (var i = 0; i < 2; i = i + 1) {
+  var x = i;
+  print x;
+}
+
+// Test while loop with closure
+var funcs = nil;
+{
+  var i = 0;
+  while (i < 3) {
+    var j = i;
+    fun capture() {
+      print j;
+    }
+    if (i == 1) {
+      funcs = capture;
+    }
+    i = i + 1;
+  }
+}
+funcs();
+
+// Test block scope doesn't leak
+{
+  var temp = "inside";
+}
+var temp = "outside";
+print temp;
+
+// Test assignment to outer scope variable
+var outer = "before";
+{
+  {
+    outer = "after";
+  }
+}
+print outer;
+
+// Test function accessing outer then inner scope
+var global = "global";
+{
+  var local = "local";
+  fun test() {
+    print global;
+    print local;
+  }
+  test();
+}
