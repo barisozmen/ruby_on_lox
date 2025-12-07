@@ -64,4 +64,10 @@ module Expr
       visitor.visit_this(self)
     end
   end
+
+  Super = Struct.new(:keyword, :method) do
+    def accept(visitor)
+      visitor.visit_super(self)
+    end
+  end
 end

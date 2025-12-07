@@ -41,13 +41,20 @@ class Parser
 
   def class_declaration
     name = consume(IDENTIFIER, "Expect class name.")
+
+    superclass = nil
+    if match(LESS)
+      consume(IDENTIFIER, "Expect superclass name.")
+      superclass = Expr::Variable.new(previous)
+    end
+
     consume(LEFT_BRACE, "Expect '{' before class body.")
 
     methods = []
     methods << function_declaration("method") until check(RIGHT_BRACE) || at_end?
 
     consume(RIGHT_BRACE, "Expect '}' after class body.")
-    Stmt::Class.new(name, methods)
+    Stmt::Class.new(name, superclass, methods)
   end
 
   def function_declaration(kind)
@@ -298,6 +305,14 @@ class Parser
     return Expr::Literal.new(nil) if match(NIL)
     return Expr::Literal.new(previous.literal) if match(NUMBER, STRING)
     return Expr::This.new(previous) if match(THIS)
+
+    if match(SUPER)
+      keyword = previous
+      consume(DOT, "Expect '.' after 'super'.")
+      method = consume(IDENTIFIER, "Expect superclass method name.")
+      return Expr::Super.new(keyword, method)
+    end
+
     return Expr::Variable.new(previous) if match(IDENTIFIER)
 
     if match(LEFT_PAREN)

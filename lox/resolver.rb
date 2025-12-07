@@ -35,6 +35,16 @@ class Resolver
     declare(stmt.name)
     define(stmt.name)
 
+    if stmt.superclass
+      if stmt.name.lexeme == stmt.superclass.name.lexeme
+        Lox.error(stmt.superclass.name, "A class can't inherit from itself.")
+      end
+      @current_class = :subclass
+      resolve(stmt.superclass)
+      begin_scope
+      @scopes.last["super"] = true
+    end
+
     begin_scope
     @scopes.last["this"] = true
 
@@ -44,6 +54,7 @@ class Resolver
     end
 
     end_scope
+    end_scope if stmt.superclass
     @current_class = enclosing_class
     nil
   end
@@ -144,6 +155,16 @@ class Resolver
     if @current_class == :none
       Lox.error(expr.keyword, "Can't use 'this' outside of a class.")
       return nil
+    end
+    resolve_local(expr, expr.keyword)
+    nil
+  end
+
+  def visit_super(expr)
+    if @current_class == :none
+      Lox.error(expr.keyword, "Can't use 'super' outside of a class.")
+    elsif @current_class != :subclass
+      Lox.error(expr.keyword, "Can't use 'super' in a class with no superclass.")
     end
     resolve_local(expr, expr.keyword)
     nil

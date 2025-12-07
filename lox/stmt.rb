@@ -47,7 +47,7 @@ module Stmt
     end
   end
 
-  Class = Struct.new(:name, :methods) do
+  Class = Struct.new(:name, :superclass, :methods) do
     def accept(visitor)
       visitor.visit_class_stmt(self)
     end

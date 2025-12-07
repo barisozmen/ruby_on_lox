@@ -1,0 +1,117 @@
+// Deep inheritance chain
+class A {
+  method() {
+    print "A";
+  }
+}
+
+class B < A {
+  method() {
+    super.method();
+    print "B";
+  }
+}
+
+class C < B {
+  method() {
+    super.method();
+    print "C";
+  }
+}
+
+class D < C {
+  method() {
+    super.method();
+    print "D";
+  }
+}
+
+D().method();
+
+// Multiple super calls in same method
+class Base {
+  foo() {
+    print "Base.foo";
+  }
+
+  bar() {
+    print "Base.bar";
+  }
+}
+
+class Derived < Base {
+  test() {
+    super.foo();
+    super.bar();
+  }
+}
+
+Derived().test();
+
+// Super in initializer
+class Parent {
+  init(x) {
+    this.x = x;
+    print "Parent init";
+  }
+}
+
+class Child < Parent {
+  init(x, y) {
+    super.init(x);
+    this.y = y;
+    print "Child init";
+  }
+}
+
+Child(10, 20);
+
+// Calling inherited method that uses 'this'
+class Shape {
+  init(name) {
+    this.name = name;
+  }
+
+  describe() {
+    print "I am a " + this.name;
+  }
+}
+
+class Rectangle < Shape {
+  init(width, height) {
+    super.init("rectangle");
+    this.width = width;
+    this.height = height;
+  }
+
+  area() {
+    return this.width * this.height;
+  }
+}
+
+var rect = Rectangle(5, 10);
+rect.describe();
+print rect.area();
+
+// No superclass - just inheriting properties
+class Container {
+  init() {
+    this.items = 0;
+  }
+
+  add() {
+    this.items = this.items + 1;
+  }
+
+  count() {
+    print this.items;
+  }
+}
+
+class Box < Container {}
+
+var box = Box();
+box.add();
+box.add();
+box.add();
+box.count();

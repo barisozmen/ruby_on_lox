@@ -1,0 +1,75 @@
+// Basic inheritance
+class Animal {
+  speak() {
+    print "Some sound";
+  }
+}
+
+class Dog < Animal {}
+var dog = Dog();
+dog.speak();
+
+// Method override
+class Cat < Animal {
+  speak() {
+    print "Meow";
+  }
+}
+var cat = Cat();
+cat.speak();
+
+// Super calls
+class Bird < Animal {
+  speak() {
+    super.speak();
+    print "Chirp";
+  }
+}
+var bird = Bird();
+bird.speak();
+
+// Multi-level inheritance
+class Canary < Bird {}
+var canary = Canary();
+canary.speak();
+
+// Initializer inheritance
+class Person {
+  init(name) {
+    this.name = name;
+  }
+
+  greet() {
+    print "Hello, I'm " + this.name;
+  }
+}
+
+class Developer < Person {
+  init(name, language) {
+    super.init(name);
+    this.language = language;
+  }
+
+  greet() {
+    super.greet();
+    print "I code in " + this.language;
+  }
+}
+
+var dev = Developer("Alice", "Ruby");
+dev.greet();
+
+// Property access through inheritance
+class Vehicle {
+  init(wheels) {
+    this.wheels = wheels;
+  }
+
+  info() {
+    print this.wheels;
+  }
+}
+
+class Car < Vehicle {}
+var car = Car(4);
+car.info();
