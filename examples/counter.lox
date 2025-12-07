@@ -1,0 +1,18 @@
+class Counter {
+  init(start) {
+    this.count = start;
+  }
+
+  increment() {
+    this.count = this.count + 1;
+  }
+
+  value() {
+    return this.count;
+  }
+}
+
+var counter = Counter(0);
+counter.increment();
+counter.increment();
+print counter.value();
