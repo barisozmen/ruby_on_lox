@@ -1,0 +1,8 @@
+class ReturnException < StandardError
+  attr_reader :value
+
+  def initialize(value)
+    @value = value
+    super()
+  end
+end

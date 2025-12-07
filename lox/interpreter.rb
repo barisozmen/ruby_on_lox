@@ -1,10 +1,30 @@
 require_relative 'runtime_error'
 require_relative 'token_type'
 require_relative 'environment'
+require_relative 'lox_function'
+require_relative 'return_exception'
 
 class Interpreter
   def initialize
-    @environment = Environment.new
+    @globals = Environment.new
+    @environment = @globals
+
+    # Native function: clock
+    @globals.define("clock", Class.new do
+      include LoxCallable
+
+      def arity
+        0
+      end
+
+      def call(interpreter, arguments)
+        Time.now.to_f
+      end
+
+      def to_s
+        "<native fn>"
+      end
+    end.new)
   end
 
   def interpret(statements)
@@ -99,6 +119,21 @@ class Interpreter
     evaluate(expr.right)
   end
 
+  def visit_call(expr)
+    callee = evaluate(expr.callee)
+    arguments = expr.arguments.map { |arg| evaluate(arg) }
+
+    unless callee.is_a?(LoxCallable)
+      raise RuntimeError.new(expr.paren, "Can only call functions and classes.")
+    end
+
+    if arguments.length != callee.arity
+      raise RuntimeError.new(expr.paren, "Expected #{callee.arity} arguments but got #{arguments.length}.")
+    end
+
+    callee.call(self, arguments)
+  end
+
   def visit_expression_stmt(stmt)
     evaluate(stmt.expression)
     nil
@@ -135,10 +170,15 @@ class Interpreter
     nil
   end
 
-  private
+  def visit_function_stmt(stmt)
+    function = LoxFunction.new(stmt, @environment)
+    @environment.define(stmt.name.lexeme, function)
+    nil
+  end
 
-  def execute(stmt)
-    stmt.accept(self)
+  def visit_return_stmt(stmt)
+    value = stmt.value ? evaluate(stmt.value) : nil
+    raise ReturnException.new(value)
   end
 
   def execute_block(statements, environment)
@@ -149,6 +189,12 @@ class Interpreter
     ensure
       @environment = previous
     end
+  end
+
+  private
+
+  def execute(stmt)
+    stmt.accept(self)
   end
 
   def evaluate(expr)

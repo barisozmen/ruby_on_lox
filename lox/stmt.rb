@@ -34,4 +34,16 @@ module Stmt
       visitor.visit_while_stmt(self)
     end
   end
+
+  Function = Struct.new(:name, :params, :body) do
+    def accept(visitor)
+      visitor.visit_function_stmt(self)
+    end
+  end
+
+  Return = Struct.new(:keyword, :value) do
+    def accept(visitor)
+      visitor.visit_return_stmt(self)
+    end
+  end
 end

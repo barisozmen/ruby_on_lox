@@ -40,4 +40,10 @@ module Expr
       visitor.visit_logical(self)
     end
   end
+
+  Call = Struct.new(:callee, :paren, :arguments) do
+    def accept(visitor)
+      visitor.visit_call(self)
+    end
+  end
 end

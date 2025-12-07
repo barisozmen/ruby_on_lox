@@ -1,0 +1,53 @@
+// Test native clock function
+print clock() > 0;
+
+// Test function declaration and call
+fun sayHi(first, last) {
+  print "Hi, " + first + " " + last + "!";
+}
+
+sayHi("Dear", "Reader");
+
+// Test return values
+fun add(a, b) {
+  return a + b;
+}
+
+print add(1, 2);
+
+// Test implicit nil return
+fun noReturn() {
+  print "no return";
+}
+
+print noReturn();
+
+// Test early return
+fun earlyReturn() {
+  return "early";
+  print "never executed";
+}
+
+print earlyReturn();
+
+// Test closures
+fun makeCounter() {
+  var i = 0;
+  fun count() {
+    i = i + 1;
+    return i;
+  }
+  return count;
+}
+
+var counter = makeCounter();
+print counter();
+print counter();
+
+// Test recursive function
+fun fib(n) {
+  if (n <= 1) return n;
+  return fib(n - 2) + fib(n - 1);
+}
+
+print fib(8);

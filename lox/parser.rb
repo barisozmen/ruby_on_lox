@@ -23,6 +23,7 @@ class Parser
   private
 
   def declaration
+    return function_declaration("function") if match(FUN)
     return var_declaration if match(VAR)
     statement
   rescue ParseError
@@ -37,11 +38,33 @@ class Parser
     Stmt::Var.new(name, initializer)
   end
 
+  def function_declaration(kind)
+    name = consume(IDENTIFIER, "Expect #{kind} name.")
+    consume(LEFT_PAREN, "Expect '(' after #{kind} name.")
+
+    parameters = []
+    unless check(RIGHT_PAREN)
+      loop do
+        raise error(peek, "Can't have more than 255 parameters.") if parameters.length >= 255
+
+        parameters << consume(IDENTIFIER, "Expect parameter name.")
+        break unless match(COMMA)
+      end
+    end
+
+    consume(RIGHT_PAREN, "Expect ')' after parameters.")
+    consume(LEFT_BRACE, "Expect '{' before #{kind} body.")
+    body = block.statements
+
+    Stmt::Function.new(name, parameters, body)
+  end
+
   def statement
-    return if_statement if match(IF)
-    return while_statement if match(WHILE)
     return for_statement if match(FOR)
+    return if_statement if match(IF)
     return print_statement if match(PRINT)
+    return return_statement if match(RETURN)
+    return while_statement if match(WHILE)
     return block if match(LEFT_BRACE)
     expression_statement
   end
@@ -110,6 +133,13 @@ class Parser
     body = Stmt::Block.new([initializer, body]) if initializer
 
     body
+  end
+
+  def return_statement
+    keyword = previous
+    value = check(SEMICOLON) ? nil : expression
+    consume(SEMICOLON, "Expect ';' after return value.")
+    Stmt::Return.new(keyword, value)
   end
 
   def expression
@@ -212,7 +242,37 @@ class Parser
       return Expr::Unary.new(operator, right)
     end
 
-    primary
+    call
+  end
+
+  def call
+    expr = primary
+
+    loop do
+      if match(LEFT_PAREN)
+        expr = finish_call(expr)
+      else
+        break
+      end
+    end
+
+    expr
+  end
+
+  def finish_call(callee)
+    arguments = []
+
+    unless check(RIGHT_PAREN)
+      loop do
+        raise error(peek, "Can't have more than 255 arguments.") if arguments.length >= 255
+
+        arguments << expression
+        break unless match(COMMA)
+      end
+    end
+
+    paren = consume(RIGHT_PAREN, "Expect ')' after arguments.")
+    Expr::Call.new(callee, paren, arguments)
   end
 
   def primary
