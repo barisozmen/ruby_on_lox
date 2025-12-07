@@ -1,6 +1,6 @@
 # Ruby on Lox
 
-Tree-walk interpreter for the Lox programming language, written in idiomatic Ruby. A chapter-by-chapter implementation of [Crafting Interpreters](https://craftinginterpreters.com).
+Tree-walk interpreter for the Lox programming language, written in idiomatic Ruby. A chapter-by-chapter implementation of Part II of [Crafting Interpreters](https://craftinginterpreters.com).
 
 <img width="216" height="204" alt="lox" src="https://github.com/user-attachments/assets/3c01e048-7409-43c0-a37f-e4d9c78f8c5b" />
 
@@ -17,8 +17,8 @@ bin/lox
 ## Example Programs
 
 **Fibonacci**
-```lox
-fun fibonacci(n) {
+```rust
+fun fib(n) {
   if (n <= 1) return n;
   return fib(n - 1) + fib(n - 2);
 }
@@ -27,7 +27,7 @@ print fib(10);
 ```
 
 **Counter Class**
-```lox
+```ruby
 class Counter {
   init(start) {
     this.count = start;
@@ -48,9 +48,9 @@ counter.increment();
 print counter.value();
 ```
 
-## Reference
-- [intro](https://craftinginterpreters.com/the-lox-language.html)
-- [grammar](https://craftinginterpreters.com/appendix-i.html)
+## References
+- Introduction: [craftinginterpreters.com/the-lox-language.html](https://craftinginterpreters.com/the-lox-language.html)
+- Grammar: [craftinginterpreters.com/appendix-i.htm](https://craftinginterpreters.com/appendix-i.html)
 
 ## Implementation
 
